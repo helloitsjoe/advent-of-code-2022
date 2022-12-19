@@ -12,7 +12,7 @@ func TestComputeScore(t *testing.T) {
 	cases := [9]Case{
 		{a: "A", b: "X", s: 4},
 		{a: "A", b: "Y", s: 8},
-		{a: "A", b: "Z", s: 9},
+		{a: "A", b: "Z", s: 3},
 		{a: "B", b: "X", s: 1},
 		{a: "B", b: "Y", s: 5},
 		{a: "B", b: "Z", s: 9},
