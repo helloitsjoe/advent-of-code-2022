@@ -1,5 +1,5 @@
-mod advent02;
+mod advent03;
 
 fn main() {
-    advent02::run();
+    advent03::run();
 }
