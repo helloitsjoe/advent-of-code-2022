@@ -49,41 +49,42 @@ pub fn run_part_two() {
 
     let mut map = HashMap::<char, bool>::new();
     let mut map_two = HashMap::<char, bool>::new();
-    let mut index = 0;
-    let mut total = 0;
-    let lines = lines.split("\n").collect::<Vec<&str>>();
-    for (i, line) in lines.iter().enumerate() {
-        if index == 0 {
-            for letter in line.chars() {
-                map.insert(letter, true);
-            }
-        }
 
-        if index == 1 {
-            for letter in line.chars() {
-                if map.contains_key(&letter) {
-                    map_two.insert(letter, true);
+    let total: i32 = lines
+        .split("\n")
+        .enumerate()
+        .map(|(i, line)| {
+            // index 0
+            if (i + 3) % 3 == 0 {
+                for letter in line.chars() {
+                    map.insert(letter, true);
                 }
             }
-        }
 
-        if index == 2 {
-            for letter in line.chars() {
-                if map.contains_key(&letter) && map_two.contains_key(&letter) {
-                    let value = convert_char_to_priority(letter);
-                    total += value;
-                    map.clear();
-                    map_two.clear();
+            // index 1
+            if (i + 2) % 3 == 0 {
+                for letter in line.chars() {
+                    if map.contains_key(&letter) {
+                        map_two.insert(letter, true);
+                    }
                 }
             }
-        }
 
-        if (i + 1) % 3 == 0 {
-            index = 0;
-        } else {
-            index += 1;
-        }
-    }
+            // index 2
+            if (i + 1) % 3 == 0 {
+                for letter in line.chars() {
+                    if map.contains_key(&letter) && map_two.contains_key(&letter) {
+                        let value = convert_char_to_priority(letter);
+                        map.clear();
+                        map_two.clear();
+                        return value;
+                    }
+                }
+            }
+
+            return 0;
+        })
+        .sum();
 
     println!("{}", total)
 }
