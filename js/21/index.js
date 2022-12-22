@@ -1,6 +1,10 @@
 import fs from "fs";
 import path from "path";
 
+/**
+ * Recursively evaluates from the root
+ * @returns {number} Total in tree
+ */
 const evaluateFromRoot = (value, obj) => {
   // Leaf, just return the number
   if (typeof value === "number") {
@@ -21,6 +25,10 @@ const evaluateFromRoot = (value, obj) => {
   }[operator];
 };
 
+/**
+ * Converts strings into nodes with key/value
+ * @returns {Object} key/value
+ */
 const convert = (node) => {
   const [key, val] = node.split(": ");
 
@@ -31,6 +39,10 @@ const convert = (node) => {
   return { key, value };
 };
 
+/**
+ * Creates an object representation of the nodes, export for unit tests only
+ * @returns {number} Total
+ */
 export function _getTotal(nodes) {
   const obj = nodes.reduce((acc, node) => {
     const { key, value } = convert(node);
@@ -41,6 +53,9 @@ export function _getTotal(nodes) {
   return evaluateFromRoot(obj.root, obj);
 }
 
+/**
+ * Main function called by index.js
+ */
 export function main() {
   const nodes = fs
     .readFileSync(new URL("input.txt", import.meta.url), "utf-8")
