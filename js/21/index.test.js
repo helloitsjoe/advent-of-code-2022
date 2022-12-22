@@ -1,7 +1,7 @@
 import { it, describe, expect } from "vitest";
-import { convertNodes } from "./index";
+import { _getTotal } from "./index";
 
-describe("convert", () => {
+describe("getTotal", () => {
   it.each([
     [["root: a + b", "a: 2", "b: 2"], 4],
     [["root: a + b", "a: 2", "b: c + d", "c: 3", "d: 1"], 6],
@@ -34,6 +34,6 @@ describe("convert", () => {
     ],
   ])("simple", (nodes, answer) => {
     console.log("nodes", nodes);
-    expect(convertNodes(nodes)).toBe(answer);
+    expect(_getTotal(nodes)).toBe(answer);
   });
 });
