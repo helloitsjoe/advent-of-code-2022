@@ -1,6 +1,6 @@
-mod advent04;
+mod advent06;
 pub mod utils;
 
 fn main() {
-    advent04::run();
+    advent06::run();
 }
