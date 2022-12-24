@@ -1,8 +1,11 @@
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
+
+// Couldn't figure out how to import this from src ¯\_(ツ)_/¯
 use std::collections::{HashMap, HashSet};
 
 const UNIQUE_LENGTH: usize = 14;
 
-pub fn run_naive() {
+pub fn run_naive(_: i32) -> usize {
     let content = std::fs::read_to_string("./src/advent06.txt").expect("Error reading file");
     let chars: Vec<char> = content.chars().collect();
 
@@ -10,13 +13,13 @@ pub fn run_naive() {
     let mut b = UNIQUE_LENGTH;
 
     while b < chars.len() {
-        let mut set = HashSet::<char>::new();
+        let mut hs = HashSet::<char>::new();
         for i in a..b {
-            set.insert(chars[i]);
+            hs.insert(chars[i]);
         }
-        // println!("{:?}", set);
+        // println!("{:?}", hs);
 
-        if set.len() == UNIQUE_LENGTH {
+        if hs.len() == UNIQUE_LENGTH {
             break;
         }
 
@@ -24,10 +27,11 @@ pub fn run_naive() {
         b += 1;
     }
 
-    println!("{}", b);
+    // println!("{}", b);
+    return b;
 }
 
-pub fn run() -> usize {
+pub fn run(_: u32) -> usize {
     let content = std::fs::read_to_string("./src/advent06.txt").expect("Error reading file");
     let chars: Vec<char> = content.chars().collect();
 
@@ -63,6 +67,13 @@ pub fn run() -> usize {
         b += 1;
     }
 
-    println!("{}", b);
     return b;
 }
+
+fn criterion_benchmark(c: &mut Criterion) {
+    // c.bench_function("advent 06 naive", |b| b.iter(|| run_naive(black_box(1))));
+    c.bench_function("advent 06", |b| b.iter(|| run(black_box(1))));
+}
+
+criterion_group!(benches, criterion_benchmark);
+criterion_main!(benches);
