@@ -11,6 +11,9 @@ import (
 
 type Dir = map[string]int
 
+const TOTAL_SPACE = 70000000
+const REQUIRED_SPACE = 30000000
+
 func BuildTree(content []string) Dir {
 	dirs := Dir{}
 	currDir := "/"
@@ -22,24 +25,43 @@ func BuildTree(content []string) Dir {
 				childTotal := dirs[currDir]
 				currDir = path.Join(currDir, target)
 				// Cheeky! Will only add to total if we move to the parent
-				if target == ".." {
+				if target == ".." && currDir != "/" {
 					dirs[currDir] += childTotal
 				}
 			}
 		} else {
 			temp := strings.Split(line, " ")
-			// Unused name for now, might need in part two?
-			idOrSize, _ := temp[0], temp[1]
-			if idOrSize == "dir" {
-				// noop
-			} else {
+			idOrSize := temp[0]
+			if idOrSize != "dir" {
 				size, _ := strconv.Atoi(idOrSize)
-				dirs[currDir] += size
+				if currDir != "/" {
+					dirs[currDir] += size
+				}
+				dirs["/"] += size
 			}
 		}
+		// fmt.Println("dirs", dirs, line)
 	}
 
 	return dirs
+}
+
+func FindDirToDelete(tree Dir) (string, int) {
+	target := tree["/"] - REQUIRED_SPACE
+	bestSize := TOTAL_SPACE
+	dirName := ""
+
+	for k, v := range tree {
+		if v >= target && v < bestSize {
+			fmt.Println(k, v)
+			bestSize = v
+			dirName = k
+		}
+	}
+
+	fmt.Println("target", target)
+	fmt.Println("/:", tree["/"])
+	return dirName, bestSize
 }
 
 func Run() {
@@ -52,12 +74,8 @@ func Run() {
 
 	tree := BuildTree(strings.Split(strings.TrimSpace(content), "\n"))
 
-	total := 0
-	for k, v := range tree {
-		if v < 100000 {
-			total += v
-			fmt.Println(k, v)
-		}
-	}
-	fmt.Println("total", total)
+	dirName, bestSize := FindDirToDelete(tree)
+
+	fmt.Println("dirName", dirName)
+	fmt.Println("bestSize", bestSize)
 }
