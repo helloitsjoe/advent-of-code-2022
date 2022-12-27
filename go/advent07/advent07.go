@@ -72,6 +72,8 @@ func Run() {
 	}
 	content := string(file)
 
+	// TODO: HMM... not sure why this isn't producing the right answer TBH
+	// Test passes with the example value
 	tree := BuildTree(strings.Split(strings.TrimSpace(content), "\n"))
 
 	dirName, bestSize := FindDirToDelete(tree)
