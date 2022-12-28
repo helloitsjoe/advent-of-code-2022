@@ -26,9 +26,9 @@ func TestGetTotalVisible(t *testing.T) {
 	content := strings.Split(strings.TrimSpace(string(bytes)), "\n")
 	invisible := FindInvisibleTrees(content)
 
-	totalVisible := getTotalVisible(content, len(invisible))
+	totalVisible := getTotalVisible(content, invisible)
 
-	if totalVisible != 5 {
+	if totalVisible != 21 {
 		t.Fatal("totalVisible", totalVisible)
 	}
 }

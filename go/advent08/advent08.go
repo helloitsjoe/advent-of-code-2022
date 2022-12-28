@@ -74,6 +74,11 @@ func FindInvisibleTrees(content []string) []string {
 	return invisible
 }
 
+func getTotalVisible(content []string, invisibleCoords []string) int {
+
+	return len(content)*len(content[0]) - len(invisibleCoords)
+}
+
 func Run() {
 	filePath := path.Join("..", "advent08", "input.txt")
 	bytes, err := os.ReadFile(filePath)
@@ -83,8 +88,7 @@ func Run() {
 	content := strings.Split(strings.TrimSpace(string(bytes)), "\n")
 
 	invisibleCoords := FindInvisibleTrees(content)
-	totalVisible := len(content)*len(content[0]) - len(invisibleCoords)
-	fmt.Println("")
-	fmt.Println(totalVisible)
-	// fmt.Println(invisibleCoords)
+
+	totalVisible := getTotalVisible(content, invisibleCoords)
+	fmt.Println("visible:", totalVisible)
 }
