@@ -9,43 +9,64 @@ import (
 	"strings"
 )
 
+func getVal(b byte) (int, error) {
+	return strconv.Atoi(string(b))
+}
+
 func FindInvisibleTrees(content []string) []string {
 	invisibleFromLeft := map[string]bool{}
 	invisibleFromRight := map[string]bool{}
-	// invisibleFromTop := map[string]bool{}
-	// invisibleFromBottom := map[string]bool{}
+	invisibleFromTop := map[string]bool{}
+	invisibleFromBottom := map[string]bool{}
 
 	invisible := []string{}
 
-	highestLeft := 0
-	highestRight := 0
+	for y := 0; y < len(content); y++ {
+		highestLeft := -1
+		highestRight := -1
 
-	x := 0
-	y := 0
-	for y < len(content) {
-		for x < len(content[y]) {
-			currLeft, _ := strconv.Atoi(string(content[y][x]))
-			currRight, _ := strconv.Atoi(string(content[y][len(content[y])-1-x]))
+		for x := 0; x < len(content[y]); x++ {
+			currLeft, _ := getVal(content[y][x])
+			currRight, _ := getVal(content[y][len(content[y])-1-x])
 
-			if currLeft >= highestLeft {
-				currLeft = highestLeft
-			} else {
-				invisibleFromLeft[string(x)+":"+string(y)] = true
+			if currLeft > highestLeft {
+				highestLeft = currLeft
+			} else if x != 0 {
+				invisibleFromLeft[fmt.Sprint(x)+":"+fmt.Sprint(y)] = true
 			}
 
-			if currRight >= highestRight {
-				currRight = highestRight
-			} else {
-				invisibleFromRight[string(len(content[y])-1-x)+":"+string(y)] = true
+			if currRight > highestRight {
+				highestRight = currRight
+			} else if x != len(content[y])-1 {
+				invisibleFromRight[fmt.Sprint(len(content[y])-1-x)+":"+fmt.Sprint(y)] = true
 			}
-
-			x += 1
 		}
-		y += 1
+	}
+
+	for x := 0; x < len(content[0]); x++ {
+		highestTop := -1
+		highestBottom := -1
+
+		for y := 0; y < len(content); y++ {
+			currTop, _ := getVal(content[y][x])
+			currBottom, _ := getVal(content[len(content)-1-y][x])
+
+			if currTop > highestTop {
+				highestTop = currTop
+			} else if y != 0 {
+				invisibleFromTop[fmt.Sprint(x)+":"+fmt.Sprint(y)] = true
+			}
+
+			if currBottom > highestBottom {
+				highestBottom = currBottom
+			} else if y != len(content)-1 {
+				invisibleFromBottom[fmt.Sprint(x)+":"+fmt.Sprint(len(content)-1-y)] = true
+			}
+		}
 	}
 
 	for k, _ := range invisibleFromLeft {
-		if invisibleFromRight[k] == true {
+		if invisibleFromRight[k] == true && invisibleFromTop[k] == true && invisibleFromBottom[k] == true {
 			invisible = append(invisible, k)
 		}
 	}
@@ -62,5 +83,8 @@ func Run() {
 	content := strings.Split(strings.TrimSpace(string(bytes)), "\n")
 
 	invisibleCoords := FindInvisibleTrees(content)
-	fmt.Println(invisibleCoords)
+	totalVisible := len(content)*len(content[0]) - len(invisibleCoords)
+	fmt.Println("")
+	fmt.Println(totalVisible)
+	// fmt.Println(invisibleCoords)
 }
