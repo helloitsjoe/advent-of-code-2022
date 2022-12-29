@@ -32,3 +32,14 @@ func TestGetTotalVisible(t *testing.T) {
 		t.Fatal("totalVisible", totalVisible)
 	}
 }
+
+func TestScenicScore(t *testing.T) {
+	filePath := path.Join("test_input.txt")
+	bytes, _ := os.ReadFile(filePath)
+	content := strings.Split(strings.TrimSpace(string(bytes)), "\n")
+	score := calculateScenicScore(content)
+
+	if score != 8 {
+		t.Fatal("score", score)
+	}
+}
