@@ -86,61 +86,46 @@ func calculateScenicScore(content []string) int {
 		for x := 1; x < len(content[y])-1; x++ {
 			curr, _ := getVal(content[y][x])
 
-			leftScore := 1
-			rightScore := 1
-			topScore := 1
-			bottomScore := 1
+			leftScore := 0
+			rightScore := 0
+			topScore := 0
+			bottomScore := 0
 
-			for i := 1; i < len(content[y]); i++ {
-				if x+i >= len(content[y]) {
-					continue
-				}
-				currLeft, _ := getVal(content[y][x+i])
-
+			// Iterate to the left
+			for i := 1; i < x+1; i++ {
+				currLeft, _ := getVal(content[y][x-i])
+				leftScore += 1
 				if currLeft >= curr {
 					break
 				}
-				fmt.Println("currLeft:", currLeft)
-				leftScore += 1
 			}
 
-			for k := 1; k < len(content[y]); k++ {
-				if x-k < 0 {
-					continue
-				}
-				currRight, _ := getVal(content[y][x-k])
+			for i := 1; i < len(content[y])-x; i++ {
+				currRight, _ := getVal(content[y][x+i])
+
+				rightScore += 1
 				if currRight >= curr {
 					break
 				}
-				rightScore += 1
 			}
 
-			for j := 1; j < len(content); j++ {
-				if y+j >= len(content) {
-					continue
-				}
-				currTop, _ := getVal(content[y+j][x])
-				if currTop >= curr {
-					break
-				}
-				topScore += 1
-			}
-
-			for l := 1; l < len(content); l++ {
-				if y-l < 0 {
-					continue
-				}
-				currBottom, _ := getVal(content[y-l][x])
+			for j := 1; j < len(content)-y; j++ {
+				currBottom, _ := getVal(content[y+j][x])
+				bottomScore += 1
 				if currBottom >= curr {
 					break
 				}
-				bottomScore += 1
+			}
+
+			for j := 1; j < y+1; j++ {
+				currTop, _ := getVal(content[y-j][x])
+				topScore += 1
+				if currTop >= curr {
+					break
+				}
 			}
 
 			score := leftScore * rightScore * topScore * bottomScore
-			fmt.Println("curr:", curr)
-			fmt.Println("score:", score)
-			fmt.Println(leftScore, rightScore, topScore, bottomScore)
 			if score > highScore {
 				highScore = score
 			}
