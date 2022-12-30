@@ -14,6 +14,8 @@ replace advent/advent07 => ../advent07
 
 replace advent/advent08 => ../advent08
 
+replace advent/advent09 => ../advent09
+
 replace advent/advent21 => ../advent21
 
-require advent/advent08 v0.0.0-00010101000000-000000000000
+require advent/advent09 v0.0.0-00010101000000-000000000000

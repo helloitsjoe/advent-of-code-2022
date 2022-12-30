@@ -1,9 +1,9 @@
 package main
 
 import (
-	"advent/advent08"
+	"advent/advent09"
 )
 
 func main() {
-	advent08.Run()
+	advent09.Run()
 }
