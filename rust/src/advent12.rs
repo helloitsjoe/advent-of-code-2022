@@ -1,6 +1,7 @@
+use std::collections::HashMap;
 use std::fs;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, Hash, PartialEq, Clone)]
 struct Point {
     x: usize,
     y: usize,
@@ -40,6 +41,8 @@ fn find_possible_next_moves(rows: &Vec<&str>, curr: &Point, prev: &Point) -> Vec
     // Convert S (start) to a
     if curr_char == 83 {
         curr_char = 97;
+    } else if curr_char == 69 {
+        curr_char = 122;
     }
 
     for tup in deltas {
@@ -94,16 +97,29 @@ fn get_next_from_dir(prev: &Point, dir: char) -> Point {
     };
 }
 
-fn find_all(next_moves: &Vec<char>, prev: &Point, lines: &Vec<&str>) {
+fn find_all(
+    next_moves: &Vec<char>,
+    prev: &Point,
+    lines: &Vec<&str>,
+    map: &mut HashMap<Point, u32>,
+    distance: u32,
+) {
     if is_end(prev, lines) == true {
         println!("End! {:?}", prev);
+        println!("{:?}", map.get(prev));
         return;
     }
     for &dir in next_moves {
         let curr = &get_next_from_dir(&prev, dir);
-        let next_next = find_possible_next_moves(lines, curr, prev);
-        find_all(&next_next, curr, lines);
-        println!("{:?}", next_next);
+        // TODO: Use a set and overwrite with lowest distance?
+        // if map.contains_key(curr) == true {
+        let distance = distance + 1;
+        map.insert(curr.clone(), distance);
+        // }
+        let next_next = &find_possible_next_moves(lines, curr, prev);
+        // println!("{:?}", next_next);
+        // println!("{:?}", map);
+        find_all(next_next, curr, lines, map, distance);
     }
 }
 
@@ -123,11 +139,9 @@ pub fn run() {
         None => panic!("Gah!"),
     };
 
-    find_all(
-        &find_possible_next_moves(&lines, &start, &start),
-        &start,
-        &lines,
-    );
+    let next_moves = find_possible_next_moves(&lines, &start, &start);
+    let mut map = HashMap::<Point, u32>::new();
+    find_all(&next_moves, &start, &lines, &mut map, 0);
 }
 
 #[test]
