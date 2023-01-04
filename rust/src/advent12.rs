@@ -25,10 +25,34 @@ impl PointDelta {
     }
 }
 
-fn find_possible_next_moves(rows: &Vec<&str>, curr: &Point, prev: &Point) -> Vec<char> {
+type Visited = HashMap<Point, u32>;
+
+fn sanitize_char(pt: &Point, rows: &Vec<&str>) -> u8 {
+    let curr_char = rows[pt.y].as_bytes()[pt.x];
+
+    if curr_char == 83 {
+        // Convert S (start) to a
+        return 97;
+    } else if curr_char == 69 {
+        // Convert E (end) to z
+        return 122;
+    }
+
+    return curr_char;
+}
+
+fn find_possible_next_moves(
+    rows: &Vec<&str>,
+    curr: &Point,
+    prev: &Point,
+    // TODO: Maybe refactor to do map/distance check outside this function
+    map: &mut Visited,
+    distance: u32,
+) -> Vec<char> {
     // Check N, E, S, W for any letter 1 above, equal, or any below
     // Ignore letters >1 above current
-    // Ignore path already taken
+    // Check map to see if point has been visited.
+    // If so only add it as an option if distance is <= current node + 1
     let mut output = Vec::new();
     let deltas = vec![
         PointDelta::new(0, -1, 'N'),
@@ -36,14 +60,8 @@ fn find_possible_next_moves(rows: &Vec<&str>, curr: &Point, prev: &Point) -> Vec
         PointDelta::new(0, 1, 'S'),
         PointDelta::new(-1, 0, 'W'),
     ];
-    // Get bytes for curr char
-    let mut curr_char = rows[curr.y].as_bytes()[curr.x];
-    // Convert S (start) to a
-    if curr_char == 83 {
-        curr_char = 97;
-    } else if curr_char == 69 {
-        curr_char = 122;
-    }
+
+    let curr_char = sanitize_char(curr, rows);
 
     for tup in deltas {
         let new = Point {
@@ -51,9 +69,13 @@ fn find_possible_next_moves(rows: &Vec<&str>, curr: &Point, prev: &Point) -> Vec
             x: (curr.x as isize + tup.x) as usize,
         };
 
-        // if let Some(new) = new_opt {
         // Ignore the point we came from
         if prev.x == new.x && prev.y == new.y {
+            continue;
+        }
+
+        // Ignore points we've visited unless distance is less
+        if map.contains_key(&new) && map[&new] < distance {
             continue;
         }
 
@@ -61,7 +83,8 @@ fn find_possible_next_moves(rows: &Vec<&str>, curr: &Point, prev: &Point) -> Vec
         // use rows.get() for safe access that returns an Option
         if let Some(row) = rows.get(new.y) {
             if let Some(_) = row.as_bytes().get(new.x) {
-                if rows[new.y].as_bytes()[new.x] <= (1 + curr_char) {
+                let new_char = sanitize_char(&new, rows);
+                if new_char <= (1 + curr_char) {
                     output.push(tup.dir);
                 }
             }
@@ -97,16 +120,19 @@ fn get_next_from_dir(prev: &Point, dir: char) -> Point {
     };
 }
 
-fn find_all(
+fn find_route(
     next_moves: &Vec<char>,
     prev: &Point,
     lines: &Vec<&str>,
-    map: &mut HashMap<Point, u32>,
+    map: &mut Visited,
     distance: u32,
 ) {
     if is_end(prev, lines) == true {
         println!("End! {:?}", prev);
-        println!("{:?}", map.get(prev));
+        println!("Moves: {:?}", map[prev]);
+        // for (k, v) in map {
+        //     println!("{:?} {}", k, v);
+        // }
         return;
     }
     for &dir in next_moves {
@@ -116,10 +142,11 @@ fn find_all(
         let distance = distance + 1;
         map.insert(curr.clone(), distance);
         // }
-        let next_next = &find_possible_next_moves(lines, curr, prev);
-        // println!("{:?}", next_next);
-        // println!("{:?}", map);
-        find_all(next_next, curr, lines, map, distance);
+        let next_next = &find_possible_next_moves(lines, curr, prev, map, distance);
+        // println!("{:?} {:?}", curr, next_next);
+        // println!("{:?}", curr);
+        // println!("{} {:?}", sanitize_char(curr, lines), map[curr]);
+        return find_route(next_next, curr, lines, map, distance);
     }
 }
 
@@ -132,16 +159,18 @@ pub fn run() {
     // Store in a map? { "x:y": { num: 3, moves: [0, 2, 1] } }
     // Find ANY route from S to E
     // Avoid revisiting an already seen point
-    let content = fs::read_to_string("./src/advent12_test_input.txt").expect("Cannot read file");
+    let path = "./src/advent12_test_input.txt";
+    // let path = "./src/advent12.txt";
+    let content = fs::read_to_string(path).expect("Cannot read file");
     let lines: Vec<&str> = content.lines().collect();
     let start = match find_start(&lines) {
         Some(p) => p,
         None => panic!("Gah!"),
     };
 
-    let next_moves = find_possible_next_moves(&lines, &start, &start);
-    let mut map = HashMap::<Point, u32>::new();
-    find_all(&next_moves, &start, &lines, &mut map, 0);
+    let mut map: Visited = HashMap::new();
+    let next_moves = find_possible_next_moves(&lines, &start, &start, &mut map, 0);
+    find_route(&next_moves, &start, &lines, &mut map, 0);
 }
 
 #[test]
@@ -149,20 +178,55 @@ fn test_possible_next() {
     let lines = vec!["aaa", "caa", "aba"];
     let curr = Point { x: 1, y: 1 };
     let prev = Point { x: 1, y: 0 };
-    assert_eq!(find_possible_next_moves(&lines, &curr, &prev), ['E', 'S']);
+    let mut map = Visited::new();
+    let next_moves = find_possible_next_moves(&lines, &curr, &prev, &mut map, 0);
+    assert_eq!(next_moves, ['E', 'S']);
 }
 
 #[test]
 fn test_possible_next_origin() {
     let lines = vec!["aaa", "caa", "aba"];
     let origin = Point { x: 0, y: 0 };
-    assert_eq!(find_possible_next_moves(&lines, &origin, &origin), ['E']);
+    let mut map = Visited::new();
+    let next_moves = find_possible_next_moves(&lines, &origin, &origin, &mut map, 0);
+    assert_eq!(next_moves, ['E']);
+}
+
+#[test]
+fn test_possible_next_last_point() {
+    let lines = vec!["aaa", "aaa", "aaa"];
+    let curr = Point { x: 2, y: 2 };
+    let prev = Point { x: 1, y: 2 };
+    let mut map = Visited::new();
+    let next_moves = find_possible_next_moves(&lines, &curr, &prev, &mut map, 0);
+    assert_eq!(next_moves, ['N']);
+}
+
+#[test]
+fn test_possible_next_start() {
+    // Start should be treated as 'a'
+    let lines = vec!["caa", "Sca", "aaa"];
+    let curr = Point { x: 0, y: 1 };
+    let mut map = Visited::new();
+    let next_moves = find_possible_next_moves(&lines, &curr, &curr, &mut map, 0);
+    assert_eq!(next_moves, ['S']);
 }
 
 #[test]
 fn test_possible_next_end() {
-    let lines = vec!["aaa", "aaa", "aaa"];
-    let curr = Point { x: 2, y: 2 };
-    let prev = Point { x: 1, y: 2 };
-    assert_eq!(find_possible_next_moves(&lines, &curr, &prev), ['N']);
+    // End should be treated as 'z'
+    let lines = vec!["aya", "wxE", "aya"];
+    let curr = Point { x: 1, y: 1 };
+    let prev = Point { x: 0, y: 1 };
+    let mut map = Visited::new();
+    let next_moves = find_possible_next_moves(&lines, &curr, &prev, &mut map, 0);
+    assert_eq!(next_moves, ['N', 'S']);
 }
+
+// #[test]
+// fn test_possible_next_visited() {
+//     let lines = vec!["aaa", "aaa", "aaa"];
+//     let curr = Point { x: 1, y: 1 };
+//     let prev = Point { x: 0, y: 1 };
+//     assert_eq!(find_possible_next_moves(&lines, &curr, &prev), ['N', 'S']);
+// }
