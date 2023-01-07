@@ -126,28 +126,32 @@ fn find_route(
     lines: &Vec<&str>,
     map: &mut Visited,
     distance: u32,
-) {
+) -> Option<Point> {
     if is_end(prev, lines) == true {
         println!("End! {:?}", prev);
         println!("Moves: {:?}", map[prev]);
         // for (k, v) in map {
         //     println!("{:?} {}", k, v);
         // }
-        return;
+        // return *prev;
+        return Some(prev.clone());
+    } else if next_moves.len() == 0 {
+        return None;
     }
+    let mut routes = vec![];
     for &dir in next_moves {
         let curr = &get_next_from_dir(&prev, dir);
-        // TODO: Use a set and overwrite with lowest distance?
-        // if map.contains_key(curr) == true {
         let distance = distance + 1;
+        // TODO: Use a set and overwrite with lowest distance?
         map.insert(curr.clone(), distance);
-        // }
         let next_next = &find_possible_next_moves(lines, curr, prev, map, distance);
-        // println!("{:?} {:?}", curr, next_next);
-        // println!("{:?}", curr);
-        // println!("{} {:?}", sanitize_char(curr, lines), map[curr]);
-        return find_route(next_next, curr, lines, map, distance);
+        println!("{:?} {:?}", curr, next_next);
+        if let Some(route) = find_route(next_next, curr, lines, map, distance) {
+            routes.push(route);
+        }
     }
+    // println!("{:?}", routes);
+    return None;
 }
 
 pub fn run() {
@@ -159,8 +163,8 @@ pub fn run() {
     // Store in a map? { "x:y": { num: 3, moves: [0, 2, 1] } }
     // Find ANY route from S to E
     // Avoid revisiting an already seen point
-    let path = "./src/advent12_test_input.txt";
-    // let path = "./src/advent12.txt";
+    // let path = "./src/advent12_test_input.txt";
+    let path = "./src/advent12.txt";
     let content = fs::read_to_string(path).expect("Cannot read file");
     let lines: Vec<&str> = content.lines().collect();
     let start = match find_start(&lines) {
