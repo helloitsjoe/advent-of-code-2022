@@ -6,8 +6,8 @@ use std::cmp::min;
 use std::fs;
 
 fn compare_int(a: u64, b: u64) -> Option<bool> {
-    // println!("int a {:?}", a);
-    // println!("int b {:?}", b);
+    println!("int a {:?}", a);
+    println!("int b {:?}", b);
     if a == b {
         return None;
     } else {
@@ -16,8 +16,8 @@ fn compare_int(a: u64, b: u64) -> Option<bool> {
 }
 
 fn compare_arr(a: Vec<Value>, b: Vec<Value>) -> Option<bool> {
-    // println!("compare_arr a {:?}", a);
-    // println!("compare_arr b {:?}", b);
+    println!("compare_arr a {:?}", a);
+    println!("compare_arr b {:?}", b);
 
     for i in 0..min(a.len(), b.len()) {
         let a_val = &a[i];
@@ -28,7 +28,11 @@ fn compare_arr(a: Vec<Value>, b: Vec<Value>) -> Option<bool> {
         }
     }
 
-    return Some(a.len() < b.len());
+    if a.len() != b.len() {
+        return Some(a.len() < b.len());
+    }
+
+    return None;
 }
 
 fn compare_match(val_a: &Value, val_b: &Value) -> Option<bool> {
@@ -45,7 +49,7 @@ fn compare_match(val_a: &Value, val_b: &Value) -> Option<bool> {
 }
 
 pub fn run() {
-    let path = "./src/advent13_test_input.txt";
+    let path = "./src/advent13.txt";
     let content = fs::read_to_string(path).expect("Error reading file");
 
     let mut right_order_indices: Vec<usize> = vec![];
@@ -59,10 +63,10 @@ pub fn run() {
         let line_a: Value = serde_json::from_str(pair[0]).unwrap();
         let line_b: Value = serde_json::from_str(pair[1]).unwrap();
 
-        // println!("====== START {}", i + 1);
+        println!("====== START {}", i + 1);
 
         if let Some(true) = compare_match(&line_a, &line_b) {
-            // println!("correct");
+            println!("correct");
             right_order_indices.push(i + 1);
         }
     }
